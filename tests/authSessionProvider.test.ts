@@ -119,10 +119,29 @@ describe("AuthSessionProvider", () => {
     vi.clearAllMocks();
     Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
+
+    const storageMock = {
+      getItem: vi.fn().mockReturnValue(null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      key: vi.fn().mockReturnValue(null),
+      length: 0,
+    };
+    Object.defineProperty(window, "localStorage", {
+      value: storageMock,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(window, "sessionStorage", {
+      value: storageMock,
+      writable: true,
+      configurable: true,
+    });
+
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
-
     mockOnAuthStateChange.mockImplementation(() => ({
       data: { subscription: { unsubscribe: unsubscribeMock } },
     }));

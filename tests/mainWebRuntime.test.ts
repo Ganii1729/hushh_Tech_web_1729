@@ -6,6 +6,9 @@ vi.mock("../src/resources/config/config", () => ({
   },
 }));
 
+
+vi.stubEnv("VITE_NDA_GENERATION_URL", "");
+
 import {
   getNdaGenerationUrl,
   getSupabaseRpcUrl,
@@ -15,7 +18,6 @@ import {
 describe("main web runtime helpers", () => {
   it("builds RPC URLs from the active Supabase project", () => {
     const rpcUrl = getSupabaseRpcUrl("check_access_status");
-
     expect(rpcUrl).toContain("ibsisfnjxeowvdtvgzff.supabase.co");
     expect(rpcUrl).not.toContain("gsqmwxqgqrgzhlhmbscg");
     expect(rpcUrl).toContain("/rest/v1/rpc/check_access_status");
@@ -26,10 +28,11 @@ describe("main web runtime helpers", () => {
       "website",
       "market-updates/example.png"
     );
-
     expect(storageUrl).toContain("ibsisfnjxeowvdtvgzff.supabase.co");
     expect(storageUrl).not.toContain("gsqmwxqgqrgzhlhmbscg");
-    expect(storageUrl).toContain("/storage/v1/object/public/website/market-updates/example.png");
+    expect(storageUrl).toContain(
+      "/storage/v1/object/public/website/market-updates/example.png"
+    );
   });
 
   it("keeps the NDA generation service configurable with a Cloud Run default", () => {
