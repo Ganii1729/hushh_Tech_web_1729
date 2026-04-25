@@ -1,4 +1,4 @@
-import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js'
 
 export interface KYCValidationError {
     field: string
@@ -33,8 +33,7 @@ export function validateEmail(email: unknown): KYCValidationError | null {
     if (isBlank(email)) {
         return { field: 'email', message: 'Email address is required' }
     }
-    const RFC_EMAIL =
-        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
+    const RFC_EMAIL = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (!RFC_EMAIL.test(String(email).trim())) {
         return { field: 'email', message: 'Enter a valid email address' }
     }
@@ -43,12 +42,12 @@ export function validateEmail(email: unknown): KYCValidationError | null {
 
 export function validatePhone(
     phone: unknown,
-    countryCode: string = 'IN'
+    countryCode: CountryCode = 'IN'
 ): KYCValidationError | null {
     if (isBlank(phone)) {
         return { field: 'phone', message: 'Phone number is required' }
     }
-    const parsed = parsePhoneNumberFromString(String(phone), countryCode as any)
+    const parsed = parsePhoneNumberFromString(String(phone), countryCode)
     if (!parsed || !parsed.isValid()) {
         return { field: 'phone', message: 'Enter a valid phone number' }
     }
@@ -88,17 +87,20 @@ export function validateDOB(dob: unknown): KYCValidationError | null {
     if (isBlank(dob)) {
         return { field: 'dob', message: 'Date of birth is required' }
     }
-    const date = new Date(String(dob))
+    const dobString = String(dob)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dobString)) {
+        return { field: 'dob', message: 'Enter a valid date in YYYY-MM-DD format' }
+    }
+    const date = new Date(dobString)
     if (isNaN(date.getTime())) {
         return { field: 'dob', message: 'Enter a valid date of birth' }
     }
     const today = new Date()
-    const age =
-        today.getFullYear() -
-        date.getFullYear() -
-        (today < new Date(today.getFullYear(), date.getMonth(), date.getDate())
-            ? 1
-            : 0)
+    let age = today.getUTCFullYear() - date.getUTCFullYear()
+    const monthDiff = today.getUTCMonth() - date.getUTCMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < date.getUTCDate())) {
+        age--
+    }
     if (age < 18) {
         return {
             field: 'dob',
