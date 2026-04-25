@@ -154,7 +154,7 @@ function App() {
   const AppLayout = () => {
     const { showNavbar, showFooter, showMobileNav } = useLayoutVisibility();
     const { session } = useAuthSession();
-    
+
     return (
       <div className="min-h-screen flex flex-col">
         {showNavbar && <Navbar />}
@@ -393,7 +393,12 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <AuthSessionProvider>
-        <Router>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <GoogleAnalyticsRouteTracker />
           <ScrollToTop />
           <OnboardingShellAutoPadding />
